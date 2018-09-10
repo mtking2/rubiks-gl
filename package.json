@@ -1,0 +1,17 @@
+{
+  "name": "cube_gl",
+  "version": "0.0.1",
+  "description": "Yet another WebGL Rubik's cube",
+  "main": "index.js",
+  "scripts": {
+    "compile": "rm -rf dist && mkdir -p dist && ./node_modules/.bin/browserify ./index.js > ./dist/index.js",
+    "watch": "nodemon -e js,html -i ./dist -x \"npm run compile\"",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Michael King",
+  "license": "MIT",
+  "dependencies": {
+    "browserify": "^16.2.2",
+    "nodemon": "^1.18.4"
+  }
+}
