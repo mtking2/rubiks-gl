@@ -1,4 +1,5 @@
-var piece_positions = require('./js/piece_positions.js');
+var pieces = require('./js/pieces.js');
+var moves = require('./js/moves.js');
 
 var scene = new THREE.Scene();
 scene.background = new THREE.Color( 0x888888 )
@@ -34,126 +35,27 @@ light2.position.set( -10, 10, -10 );
 scene.add( light );
 scene.add( light2 );
 
+// add all the pieces to the scene
+pieces.all.forEach((p) => { scene.add(p); });
 
-var pressedKey = '';
+
+var queue, temp_queue = [];
+// var pressedKey = '';
 document.addEventListener('keydown', function(e) {
-  pressedKey = e.key;
-  // console.log(pieces[6].position.round());
-
-  // console.log(e.key);
-  setTimeout(() => {
-    pressedKey = '';
-  }, 15);
+  queue.push(e.key);
+  temp_queue.push(e.key);
 });
-
-var pieces = [];
-piece_positions.all.forEach((piece) => {
-  var geometry = new THREE.BoxGeometry( 0.95, 0.95, 0.95 );
-  var material = new THREE.MeshLambertMaterial( { color: 0x222222 } );
-  var cube = new THREE.Mesh( geometry, material );
-  cube.position.x = piece[0];
-  cube.position.y = piece[1];
-  cube.position.z = piece[2];
-  scene.add( cube );
-  pieces.push( cube );
-});
-
-// var geometry = new THREE.BoxGeometry( 1, 1, 1 );
-// var material = new THREE.MeshBasicMaterial( { color: 0x0000dd } );
-// var cube = new THREE.Mesh( geometry, material );
-// cube.position.x = 1;
-// cube.position.y = 1;
-
-
-function selfCorrect() {
-  pieces.forEach((piece) => {
-    piece.getWorldPosition(piece.position).round();
-  });
-}
-
-
-var rad = Math.PI/180
-var inc = 10;
-var rads = (Math.PI/2)/inc;
-// var eulerX = new THREE.Euler( theta, 0, 0, 'XYZ' );
-
-// var eulerZ = new THREE.Euler( 0, 0, theta, 'XYZ' );
-
-var [fc,fpc, uc,upc] = new Array(2).fill(0);
-
-function _F(isPrime=false) {
-  var theta = isPrime ? rads : -rads
-  var eulerTrans = new THREE.Euler( 0, 0, theta, 'XYZ' );
-
-  let thetaRot = isPrime ? rads * (fpc+1) : -rads * (fc+1)
-  let eulerRot = new THREE.Euler( 0, 0, thetaRot, 'XYZ' );
-
-  if ( (isPrime ? fpc : fc) < inc) {
-    pieces.forEach((piece) => {
-      if (Math.round(piece.position.z) === 1) {
-        piece.position.applyEuler(eulerTrans);
-        piece.setRotationFromEuler(eulerRot);
-        // piece.position.round();
-        // piece.getWorldPosition(piece.position).round();
-      }
-    });
-
-    isPrime ? fpc++ : fc++;
-    requestAnimationFrame((timestamp) => {
-      _F(isPrime);
-    });
-  } else {
-    selfCorrect()
-    isPrime ? fpc = 0 : fc = 0;
-    return;
-  }
-}
-
-function _U(isPrime=false) {
-  var theta = isPrime ? -rads : rads
-  var eulerTrans = new THREE.Euler( 0, theta, 0, 'XYZ' );
-
-  let thetaRot = isPrime ? -rads * (upc+1) : rads * (uc+1)
-  let eulerRot = new THREE.Euler( 0, thetaRot, 0, 'XYZ' );
-
-  if ( (isPrime ? upc : uc) < inc) {
-    pieces.forEach((piece) => {
-      if (Math.round(piece.position.y) === 1) {
-        piece.position.applyEuler(eulerTrans);
-        piece.setRotationFromEuler(eulerRot);
-        // piece.position.round();
-        // piece.getWorldPosition(piece.position).round();
-      }
-    });
-
-    isPrime ? upc++ : uc++;
-    requestAnimationFrame((timestamp) => {
-      _U(isPrime);
-    });
-  } else {
-    selfCorrect()
-    isPrime ? upc = 0 : uc = 0;
-    return;
-  }
-}
 
 var animate = function () {
 	requestAnimationFrame( animate );
 
-  switch (pressedKey) {
-    case 'u':
-      setTimeout(() => {
-        _U();
-      }, 20);
-
-      break;
-    case 'U': _U(true); break;
-    case 'f':
-      setTimeout(() => {
-        _F();
-      }, 20);
-      break;
-    case 'F': _F(true); break;
+  if (!moves.isLocked()) {
+    switch (temp_queue.shift()) {
+      case 'u': moves._U(); break;
+      case 'U': moves._U(true); break;
+      case 'f': moves._F(); break;
+      case 'F': moves._F(true); break;
+    }
   }
 
   controls.update();
