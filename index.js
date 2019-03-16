@@ -39,7 +39,7 @@ scene.add( light2 );
 pieces.all.forEach((p) => { scene.add(p); });
 
 
-var queue, temp_queue = [];
+var queue = [], temp_queue = [];
 // var pressedKey = '';
 document.addEventListener('keydown', function(e) {
   queue.push(e.key);
