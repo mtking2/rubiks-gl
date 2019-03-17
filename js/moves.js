@@ -13,69 +13,79 @@ function unlock() {
   locked = false;
 }
 
-// var rad = Math.PI/180
-var inc = 10;
+var inc = 8;
 var rads = (Math.PI/2)/inc;
+var step_count = 0;
 
-var [fc,fpc, uc,upc] = new Array(2).fill(0);
-
-function _F(isPrime=false) {
+function doMove(move) {
   lock();
+  var theta = 0,
+      thetaRot = 0,
+      eulerTrans = new THREE.Euler( 0, 0, theta, 'XYZ' ),
+      eulerRot = new THREE.Euler( 0, 0, thetaRot, 'XYZ' ),
+      axis = '',
+      thres = null;
 
-  var theta = isPrime ? rads : -rads
-  var eulerTrans = new THREE.Euler( 0, 0, theta, 'XYZ' );
+  switch (move) {
 
-  let thetaRot = isPrime ? rads * (fpc+1) : -rads * (fc+1)
-  let eulerRot = new THREE.Euler( 0, 0, thetaRot, 'XYZ' );
-
-  if ( (isPrime ? fpc : fc) < inc) {
-    pieces.all.forEach((piece) => {
-      if (Math.round(piece.position.z) === 1) {
-        piece.position.applyEuler(eulerTrans);
-        piece.setRotationFromEuler(eulerRot);
+    case 'f': case 'F': case 'b': case 'B':
+      axis = 'z'; thres = (['b','B'].includes(move)) ? -1 : 1;
+      theta = rads;
+      thetaRot = rads * (step_count+1);
+      if (move === 'f' || move === 'B') {
+        theta *= -1;
+        thetaRot *= -1;
       }
-    });
+      eulerTrans = new THREE.Euler( 0, 0, theta, 'XYZ' );
+      eulerRot = new THREE.Euler( 0, 0, thetaRot, 'XYZ' );
+      break;
 
-    isPrime ? fpc++ : fc++;
-    requestAnimationFrame((timestamp) => {
-      _F(isPrime);
-    });
-  } else {
-    unlock();
-    isPrime ? fpc = 0 : fc = 0;
-    return;
+    case 'u': case 'U': case 'd': case 'D':
+      axis = 'y'; thres = (['d','D'].includes(move)) ? -1 : 1;
+      theta = rads;
+      thetaRot = rads * (step_count+1);
+      if (move === 'u' || move === 'D') {
+        theta *= -1;
+        thetaRot *= -1;
+      }
+      eulerTrans = new THREE.Euler( 0, theta, 0, 'XYZ' );
+      eulerRot = new THREE.Euler( 0, thetaRot, 0, 'XYZ' );
+      break;
+
+    case 'l': case 'L': case 'r': case 'R':
+      axis = 'x'; thres = (['r','R'].includes(move)) ? -1 : 1;
+      theta = rads;
+      thetaRot = rads * (step_count+1);
+      if (move === 'l' || move === 'R') {
+        theta *= -1;
+        thetaRot *= -1;
+      }
+      eulerTrans = new THREE.Euler( theta, 0, 0, 'XYZ' );
+      eulerRot = new THREE.Euler( thetaRot, 0, 0, 'XYZ' );
+      break;
+
   }
-}
 
-function _U(isPrime=false) {
-  lock();
-  var theta = isPrime ? -rads : rads
-  var eulerTrans = new THREE.Euler( 0, theta, 0, 'XYZ' );
-
-  let thetaRot = isPrime ? -rads * (upc+1) : rads * (uc+1)
-  let eulerRot = new THREE.Euler( 0, thetaRot, 0, 'XYZ' );
-
-  if ( (isPrime ? upc : uc) < inc) {
+  if (step_count < inc) {
     pieces.all.forEach((piece) => {
-      if (Math.round(piece.position.y) === 1) {
+      if (Math.round(piece.position[axis]) === thres) {
         piece.position.applyEuler(eulerTrans);
         piece.setRotationFromEuler(eulerRot);
       }
     });
 
-    isPrime ? upc++ : uc++;
+    step_count++;
     requestAnimationFrame((timestamp) => {
-      _U(isPrime);
+      doMove(move);
     });
   } else {
+    step_count = 0
     unlock();
-    isPrime ? upc = 0 : uc = 0;
     return;
   }
 }
 
 module.exports = {
   isLocked: isLocked,
-  _U: _U,
-  _F: _F
+  doMove: doMove
 }
