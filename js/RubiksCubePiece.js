@@ -1,6 +1,6 @@
 // https://discourse.threejs.org/t/round-edged-box-2/1448
 // https://jsfiddle.net/prisoner849/p614jc75/
-class RoundEdgedBox extends THREE.Geometry {
+class RubiksCubePiece extends THREE.Group {
 
   constructor(width, height, depth, radius, widthSegments, heightSegments, depthSegments, smoothness) {
     super();
@@ -18,7 +18,9 @@ class RoundEdgedBox extends THREE.Geometry {
     let halfHeight = height * .5 - radius;
     let halfDepth = depth * .5 - radius;
 
-    // var geometry = new THREE.Geometry();
+    this.geometry = new THREE.Geometry();
+    var material = new THREE.MeshLambertMaterial( { color: 0x1a1a1a } );
+    var sticker_material = new THREE.MeshLambertMaterial( { color: 0x1a1a1a } );
 
     // corners - 4 eighths of a sphere
     var corner1 = new THREE.SphereGeometry(radius, smoothness, smoothness, 0, Math.PI * .5, 0, Math.PI * .5);
@@ -30,10 +32,10 @@ class RoundEdgedBox extends THREE.Geometry {
     var corner4 = new THREE.SphereGeometry(radius, smoothness, smoothness, Math.PI * .5, Math.PI * .5, Math.PI * .5, Math.PI * .5);
     corner4.translate(halfWidth, -halfHeight, halfDepth);
 
-    this.merge(corner1);
-    this.merge(corner2);
-    this.merge(corner3);
-    this.merge(corner4);
+    this.geometry.merge(corner1);
+    this.geometry.merge(corner2);
+    this.geometry.merge(corner3);
+    this.geometry.merge(corner4);
 
     // edges - 2 fourths for each dimension
     // width
@@ -76,32 +78,44 @@ class RoundEdgedBox extends THREE.Geometry {
 
     side.merge(side2);
 
-    this.merge(edge);
-    this.merge(side);
+    this.geometry.merge(edge);
+    this.geometry.merge(side);
 
     // duplicate and flip
-    var secondHalf = this.clone();
+    var secondHalf = this.geometry.clone();
     secondHalf.rotateY(Math.PI);
-    this.merge(secondHalf);
+    this.geometry.merge(secondHalf);
 
     // top
-    this.top = new THREE.PlaneGeometry(width - radius * 2, depth - radius * 2, widthSegments, depthSegments);
-    this.top.rotateX(-Math.PI * .5);
-    this.top.translate(0, height * .5, 0);
+    var top = new THREE.PlaneGeometry(width - radius * 2, depth - radius * 2, widthSegments, depthSegments);
+    // this.top = new THREE.Mesh(new THREE.PlaneGeometry(width - radius * 2, depth - radius * 2, widthSegments, depthSegments), new THREE.MeshPhongMaterial({specular: '#fff',fog: false,color: '#ff9a00',shininess: 10 }));
+    top.rotateX(-Math.PI * .5);
+    top.translate(0, height * .5, 0);
 
     // bottom
     var bottom = new THREE.PlaneGeometry(width - radius * 2, depth - radius * 2, widthSegments, depthSegments);
     bottom.rotateX(Math.PI * .5);
     bottom.translate(0, -height * .5, 0);
 
-    this.merge(this.top);
-    this.merge(bottom);
+    this.geometry.merge(top);
+    this.geometry.merge(bottom);
 
-    this.mergeVertices();
+    this.geometry.mergeVertices();
+    var cube = new THREE.Mesh( this.geometry, material );
+
+    let clearance = 1e-3;
+    this.top_sticker = new THREE.Mesh( top.clone().translate(0, clearance, 0), sticker_material.clone() );
+    this.bottom_sticker = new THREE.Mesh( top.clone().translate(0, clearance, 0), sticker_material.clone() ).rotateX(Math.PI);//this.top_sticker.clone().rotateX(Math.PI);
+    // this.bottom_sticker.material.color.setHex(0x0033ee)
+
+    this.add(this.top_sticker);
+    this.add(this.bottom_sticker);
+
+    this.add(cube)
 
     return this;
   }
 
 }
 
-module.exports = RoundEdgedBox;
+module.exports = RubiksCubePiece;

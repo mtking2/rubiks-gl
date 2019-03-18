@@ -28,16 +28,25 @@ function onWindowResize() {
   renderer.setSize( window.innerWidth, window.innerHeight );
 }
 
-var light = new THREE.PointLight( 0xffffff, 2.5, 100 );
-var light2 = new THREE.PointLight( 0xffffff, 2.5, 100 );
-light.position.set( 10, 8, 10 );
+var light = new THREE.PointLight( 0xffffff, 1, 50 );
+var light2 = new THREE.PointLight( 0xffffff, 1, 50 );
+light.position.set( 10, 10, 10 );
 light2.position.set( -10, 10, -10 );
 scene.add( light );
 scene.add( light2 );
+scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+
+
+var geometry = new THREE.SphereGeometry( 0.85, 32, 32 );
+var material = new THREE.MeshBasicMaterial( {color: 0x1a1a1a} );
+var sphere = new THREE.Mesh( geometry, material );
+scene.add( sphere );
+
+var green = new THREE.Color(0, 1, 0);
+var black = new THREE.Color(0x1a1a1a);
 
 // add all the pieces to the scene
 pieces.all.forEach((p) => { scene.add(p); });
-
 
 var queue = [], temp_queue = [];
 // var pressedKey = '';

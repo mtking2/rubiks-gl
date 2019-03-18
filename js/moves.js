@@ -20,48 +20,48 @@ var step_count = 0;
 function doMove(move) {
   lock();
   var theta = 0,
-      thetaRot = 0,
-      eulerTrans = new THREE.Euler( 0, 0, theta, 'XYZ' ),
-      eulerRot = new THREE.Euler( 0, 0, thetaRot, 'XYZ' ),
+      rotVector = new THREE.Vector3( 0, 0, 0 ),
       axis = '',
+      transAxis1 = '',
+      transAxis2 = '',
       thres = null;
 
   switch (move) {
 
     case 'f': case 'F': case 'b': case 'B':
-      axis = 'z'; thres = (['b','B'].includes(move)) ? -1 : 1;
+      rotVector = new THREE.Vector3( 0, 0, -1 );
+      axis = 'z';
+      transAxis1 = 'y';
+      transAxis2 = 'x';
+
+      thres = (['b','B'].includes(move)) ? -1 : 1;
       theta = rads;
-      thetaRot = rads * (step_count+1);
-      if (move === 'f' || move === 'B') {
-        theta *= -1;
-        thetaRot *= -1;
-      }
-      eulerTrans = new THREE.Euler( 0, 0, theta, 'XYZ' );
-      eulerRot = new THREE.Euler( 0, 0, thetaRot, 'XYZ' );
+
+      theta *= (['F','b'].includes(move)) ? -1 : 1
       break;
 
     case 'u': case 'U': case 'd': case 'D':
-      axis = 'y'; thres = (['d','D'].includes(move)) ? -1 : 1;
+      rotVector = new THREE.Vector3( 0, -1, 0 );
+      axis = 'y';
+      transAxis1 = 'x';
+      transAxis2 = 'z';
+
+      thres = (['d','D'].includes(move)) ? -1 : 1;
       theta = rads;
-      thetaRot = rads * (step_count+1);
-      if (move === 'u' || move === 'D') {
-        theta *= -1;
-        thetaRot *= -1;
-      }
-      eulerTrans = new THREE.Euler( 0, theta, 0, 'XYZ' );
-      eulerRot = new THREE.Euler( 0, thetaRot, 0, 'XYZ' );
+
+      theta *= (['U','d'].includes(move)) ? -1 : 1
       break;
 
     case 'l': case 'L': case 'r': case 'R':
-      axis = 'x'; thres = (['r','R'].includes(move)) ? -1 : 1;
+      rotVector = new THREE.Vector3( -1, 0, 0 );
+      axis = 'x';
+      transAxis1 = 'z';
+      transAxis2 = 'y';
+
+      thres = (['r','R'].includes(move)) ? -1 : 1;
       theta = rads;
-      thetaRot = rads * (step_count+1);
-      if (move === 'l' || move === 'R') {
-        theta *= -1;
-        thetaRot *= -1;
-      }
-      eulerTrans = new THREE.Euler( theta, 0, 0, 'XYZ' );
-      eulerRot = new THREE.Euler( thetaRot, 0, 0, 'XYZ' );
+
+      theta *= (['L','r'].includes(move)) ? -1 : 1
       break;
 
   }
@@ -69,8 +69,11 @@ function doMove(move) {
   if (step_count < inc) {
     pieces.all.forEach((piece) => {
       if (Math.round(piece.position[axis]) === thres) {
-        piece.position.applyEuler(eulerTrans);
-        piece.setRotationFromEuler(eulerRot);
+        let x_prime = piece.position[transAxis1] * Math.cos(theta) - piece.position[transAxis2] * Math.sin(theta);
+        let y_prime = piece.position[transAxis1] * Math.sin(theta) + piece.position[transAxis2] * Math.cos(theta);
+        piece.position[transAxis1] = x_prime;
+        piece.position[transAxis2] = y_prime;
+        piece.rotateOnWorldAxis(rotVector, theta);
       }
     });
 

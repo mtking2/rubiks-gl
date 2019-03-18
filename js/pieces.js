@@ -1,4 +1,4 @@
-var RoundEdgedBox = require('./RoundEdgedBox');
+var RubiksCubePiece = require('./RubiksCubePiece');
 
 var center_pos = [
   [ 0, 0, 1], // front
@@ -41,20 +41,34 @@ var corner_pos = [
   [-1, 1,-1]  // bq4
 ]
 
+var green = new THREE.Color(0x00ee33);
+var blue = new THREE.Color(0x0033ee);
+var red = new THREE.Color(1, 0, 0);
+var orange = new THREE.Color(0xff7a00);
+var white = new THREE.Color(1, 1, 1);
+var yellow = new THREE.Color(0xffed00);
+var black = new THREE.Color(0x1a1a1a);
+
 function cube_gen(pos_array) {
+
   let tmp_array = [];
   pos_array.forEach((piece) => {
-    let size = 0.98;
-    // var geometry = new THREE.BoxGeometry( 0.95, 0.95, 0.95 );
-    var geometry = new RoundEdgedBox(size, size, size, 0.075, 1, 1, 1, 5);
-    var material = new THREE.MeshLambertMaterial( { color: 0x1a1a1a, wireframe: false } );
-    var cube = new THREE.Mesh( geometry, material );
+    let size = 0.965;
+    var cube = new RubiksCubePiece(size, size, size, 0.075, 1, 1, 1, 5);
+
     cube.position.x = piece[0];
     cube.position.y = piece[1];
     cube.position.z = piece[2];
 
+    if (cube.position.y === 1) {
+      cube.top_sticker.material.color = green;
+    } else if (cube.position.y === -1) {
+      cube.bottom_sticker.material.color = blue;
+    }
+
     tmp_array.push( cube );
   });
+
   return tmp_array;
 }
 

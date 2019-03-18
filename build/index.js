@@ -29,16 +29,25 @@ function onWindowResize() {
   renderer.setSize( window.innerWidth, window.innerHeight );
 }
 
-var light = new THREE.PointLight( 0xffffff, 2.5, 100 );
-var light2 = new THREE.PointLight( 0xffffff, 2.5, 100 );
-light.position.set( 10, 8, 10 );
+var light = new THREE.PointLight( 0xffffff, 1, 50 );
+var light2 = new THREE.PointLight( 0xffffff, 1, 50 );
+light.position.set( 10, 10, 10 );
 light2.position.set( -10, 10, -10 );
 scene.add( light );
 scene.add( light2 );
+scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+
+
+var geometry = new THREE.SphereGeometry( 0.85, 32, 32 );
+var material = new THREE.MeshBasicMaterial( {color: 0x1a1a1a} );
+var sphere = new THREE.Mesh( geometry, material );
+scene.add( sphere );
+
+var green = new THREE.Color(0, 1, 0);
+var black = new THREE.Color(0x1a1a1a);
 
 // add all the pieces to the scene
 pieces.all.forEach((p) => { scene.add(p); });
-
 
 var queue = [], temp_queue = [];
 // var pressedKey = '';
@@ -68,9 +77,10 @@ animate();
 },{"./js/moves":3,"./js/pieces":4}],2:[function(require,module,exports){
 // https://discourse.threejs.org/t/round-edged-box-2/1448
 // https://jsfiddle.net/prisoner849/p614jc75/
-class RoundEdgedBox {
+class RubiksCubePiece extends THREE.Group {
 
   constructor(width, height, depth, radius, widthSegments, heightSegments, depthSegments, smoothness) {
+    super();
 
     width = width || 1;
     height = height || 1;
@@ -85,7 +95,9 @@ class RoundEdgedBox {
     let halfHeight = height * .5 - radius;
     let halfDepth = depth * .5 - radius;
 
-    var geometry = new THREE.Geometry();
+    this.geometry = new THREE.Geometry();
+    var material = new THREE.MeshLambertMaterial( { color: 0x1a1a1a } );
+    var sticker_material = new THREE.MeshLambertMaterial( { color: 0x1a1a1a } );
 
     // corners - 4 eighths of a sphere
     var corner1 = new THREE.SphereGeometry(radius, smoothness, smoothness, 0, Math.PI * .5, 0, Math.PI * .5);
@@ -97,10 +109,10 @@ class RoundEdgedBox {
     var corner4 = new THREE.SphereGeometry(radius, smoothness, smoothness, Math.PI * .5, Math.PI * .5, Math.PI * .5, Math.PI * .5);
     corner4.translate(halfWidth, -halfHeight, halfDepth);
 
-    geometry.merge(corner1);
-    geometry.merge(corner2);
-    geometry.merge(corner3);
-    geometry.merge(corner4);
+    this.geometry.merge(corner1);
+    this.geometry.merge(corner2);
+    this.geometry.merge(corner3);
+    this.geometry.merge(corner4);
 
     // edges - 2 fourths for each dimension
     // width
@@ -143,16 +155,17 @@ class RoundEdgedBox {
 
     side.merge(side2);
 
-    geometry.merge(edge);
-    geometry.merge(side);
+    this.geometry.merge(edge);
+    this.geometry.merge(side);
 
     // duplicate and flip
-    var secondHalf = geometry.clone();
+    var secondHalf = this.geometry.clone();
     secondHalf.rotateY(Math.PI);
-    geometry.merge(secondHalf);
+    this.geometry.merge(secondHalf);
 
     // top
     var top = new THREE.PlaneGeometry(width - radius * 2, depth - radius * 2, widthSegments, depthSegments);
+    // this.top = new THREE.Mesh(new THREE.PlaneGeometry(width - radius * 2, depth - radius * 2, widthSegments, depthSegments), new THREE.MeshPhongMaterial({specular: '#fff',fog: false,color: '#ff9a00',shininess: 10 }));
     top.rotateX(-Math.PI * .5);
     top.translate(0, height * .5, 0);
 
@@ -161,17 +174,28 @@ class RoundEdgedBox {
     bottom.rotateX(Math.PI * .5);
     bottom.translate(0, -height * .5, 0);
 
-    geometry.merge(top);
-    geometry.merge(bottom);
+    this.geometry.merge(top);
+    this.geometry.merge(bottom);
 
-    geometry.mergeVertices();
+    this.geometry.mergeVertices();
+    var cube = new THREE.Mesh( this.geometry, material );
 
-    return geometry;
+    let clearance = 1e-3;
+    this.top_sticker = new THREE.Mesh( top.clone().translate(0, clearance, 0), sticker_material.clone() );
+    this.bottom_sticker = new THREE.Mesh( top.clone().translate(0, clearance, 0), sticker_material.clone() ).rotateX(Math.PI);//this.top_sticker.clone().rotateX(Math.PI);
+    // this.bottom_sticker.material.color.setHex(0x0033ee)
+
+    this.add(this.top_sticker);
+    this.add(this.bottom_sticker);
+
+    this.add(cube)
+
+    return this;
   }
 
 }
 
-module.exports = RoundEdgedBox;
+module.exports = RubiksCubePiece;
 
 },{}],3:[function(require,module,exports){
 var pieces = require('./pieces.js');
@@ -196,48 +220,48 @@ var step_count = 0;
 function doMove(move) {
   lock();
   var theta = 0,
-      thetaRot = 0,
-      eulerTrans = new THREE.Euler( 0, 0, theta, 'XYZ' ),
-      eulerRot = new THREE.Euler( 0, 0, thetaRot, 'XYZ' ),
+      rotVector = new THREE.Vector3( 0, 0, 0 ),
       axis = '',
+      transAxis1 = '',
+      transAxis2 = '',
       thres = null;
 
   switch (move) {
 
     case 'f': case 'F': case 'b': case 'B':
-      axis = 'z'; thres = (['b','B'].includes(move)) ? -1 : 1;
+      rotVector = new THREE.Vector3( 0, 0, -1 );
+      axis = 'z';
+      transAxis1 = 'y';
+      transAxis2 = 'x';
+
+      thres = (['b','B'].includes(move)) ? -1 : 1;
       theta = rads;
-      thetaRot = rads * (step_count+1);
-      if (move === 'f' || move === 'B') {
-        theta *= -1;
-        thetaRot *= -1;
-      }
-      eulerTrans = new THREE.Euler( 0, 0, theta, 'XYZ' );
-      eulerRot = new THREE.Euler( 0, 0, thetaRot, 'XYZ' );
+
+      theta *= (['F','b'].includes(move)) ? -1 : 1
       break;
 
     case 'u': case 'U': case 'd': case 'D':
-      axis = 'y'; thres = (['d','D'].includes(move)) ? -1 : 1;
+      rotVector = new THREE.Vector3( 0, -1, 0 );
+      axis = 'y';
+      transAxis1 = 'x';
+      transAxis2 = 'z';
+
+      thres = (['d','D'].includes(move)) ? -1 : 1;
       theta = rads;
-      thetaRot = rads * (step_count+1);
-      if (move === 'u' || move === 'D') {
-        theta *= -1;
-        thetaRot *= -1;
-      }
-      eulerTrans = new THREE.Euler( 0, theta, 0, 'XYZ' );
-      eulerRot = new THREE.Euler( 0, thetaRot, 0, 'XYZ' );
+
+      theta *= (['U','d'].includes(move)) ? -1 : 1
       break;
 
     case 'l': case 'L': case 'r': case 'R':
-      axis = 'x'; thres = (['r','R'].includes(move)) ? -1 : 1;
+      rotVector = new THREE.Vector3( -1, 0, 0 );
+      axis = 'x';
+      transAxis1 = 'z';
+      transAxis2 = 'y';
+
+      thres = (['r','R'].includes(move)) ? -1 : 1;
       theta = rads;
-      thetaRot = rads * (step_count+1);
-      if (move === 'l' || move === 'R') {
-        theta *= -1;
-        thetaRot *= -1;
-      }
-      eulerTrans = new THREE.Euler( theta, 0, 0, 'XYZ' );
-      eulerRot = new THREE.Euler( thetaRot, 0, 0, 'XYZ' );
+
+      theta *= (['L','r'].includes(move)) ? -1 : 1
       break;
 
   }
@@ -245,8 +269,11 @@ function doMove(move) {
   if (step_count < inc) {
     pieces.all.forEach((piece) => {
       if (Math.round(piece.position[axis]) === thres) {
-        piece.position.applyEuler(eulerTrans);
-        piece.setRotationFromEuler(eulerRot);
+        let x_prime = piece.position[transAxis1] * Math.cos(theta) - piece.position[transAxis2] * Math.sin(theta);
+        let y_prime = piece.position[transAxis1] * Math.sin(theta) + piece.position[transAxis2] * Math.cos(theta);
+        piece.position[transAxis1] = x_prime;
+        piece.position[transAxis2] = y_prime;
+        piece.rotateOnWorldAxis(rotVector, theta);
       }
     });
 
@@ -267,7 +294,7 @@ module.exports = {
 }
 
 },{"./pieces.js":4}],4:[function(require,module,exports){
-var RoundEdgedBox = require('./RoundEdgedBox');
+var RubiksCubePiece = require('./RubiksCubePiece');
 
 var center_pos = [
   [ 0, 0, 1], // front
@@ -310,20 +337,34 @@ var corner_pos = [
   [-1, 1,-1]  // bq4
 ]
 
+var green = new THREE.Color(0x00ee33);
+var blue = new THREE.Color(0x0033ee);
+var red = new THREE.Color(1, 0, 0);
+var orange = new THREE.Color(0xff7a00);
+var white = new THREE.Color(1, 1, 1);
+var yellow = new THREE.Color(0xffed00);
+var black = new THREE.Color(0x1a1a1a);
+
 function cube_gen(pos_array) {
+
   let tmp_array = [];
   pos_array.forEach((piece) => {
-    let size = 0.98;
-    // var geometry = new THREE.BoxGeometry( 0.95, 0.95, 0.95 );
-    var geometry = new RoundEdgedBox(size, size, size, 0.075, 1, 1, 1, 5);
-    var material = new THREE.MeshLambertMaterial( { color: 0x1a1a1a, wireframe: false } );
-    var cube = new THREE.Mesh( geometry, material );
+    let size = 0.965;
+    var cube = new RubiksCubePiece(size, size, size, 0.075, 1, 1, 1, 5);
+
     cube.position.x = piece[0];
     cube.position.y = piece[1];
     cube.position.z = piece[2];
 
+    if (cube.position.y === 1) {
+      cube.top_sticker.material.color = green;
+    } else if (cube.position.y === -1) {
+      cube.bottom_sticker.material.color = blue;
+    }
+
     tmp_array.push( cube );
   });
+
   return tmp_array;
 }
 
@@ -338,4 +379,4 @@ module.exports = {
   all: centers.concat(edges).concat(corners)
 }
 
-},{"./RoundEdgedBox":2}]},{},[1]);
+},{"./RubiksCubePiece":2}]},{},[1]);
