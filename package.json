@@ -1,6 +1,6 @@
 {
   "name": "cube_gl",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Yet another WebGL Rubik's cube",
   "main": "index.js",
   "scripts": {

@@ -88,7 +88,6 @@ class RubiksCubePiece extends THREE.Group {
 
     // top
     var top = new THREE.PlaneGeometry(width - radius * 2, depth - radius * 2, widthSegments, depthSegments);
-    // this.top = new THREE.Mesh(new THREE.PlaneGeometry(width - radius * 2, depth - radius * 2, widthSegments, depthSegments), new THREE.MeshPhongMaterial({specular: '#fff',fog: false,color: '#ff9a00',shininess: 10 }));
     top.rotateX(-Math.PI * .5);
     top.translate(0, height * .5, 0);
 
@@ -103,15 +102,23 @@ class RubiksCubePiece extends THREE.Group {
     this.geometry.mergeVertices();
     var cube = new THREE.Mesh( this.geometry, material );
 
-    let clearance = 1e-3;
+    let clearance = 1e-2;
     this.top_sticker = new THREE.Mesh( top.clone().translate(0, clearance, 0), sticker_material.clone() );
-    this.bottom_sticker = new THREE.Mesh( top.clone().translate(0, clearance, 0), sticker_material.clone() ).rotateX(Math.PI);//this.top_sticker.clone().rotateX(Math.PI);
-    // this.bottom_sticker.material.color.setHex(0x0033ee)
+    this.bottom_sticker = new THREE.Mesh( top.clone().translate(0, clearance, 0), sticker_material.clone() ).rotateX(Math.PI);
 
-    this.add(this.top_sticker);
-    this.add(this.bottom_sticker);
+    this.front_sticker = new THREE.Mesh( top.clone().translate(0, clearance, 0), sticker_material.clone() ).rotateX(Math.PI/2);
+    this.back_sticker = new THREE.Mesh( top.clone().translate(0, clearance, 0), sticker_material.clone() ).rotateX(-Math.PI/2);
+
+    this.right_sticker = new THREE.Mesh( top.clone().translate(0, clearance, 0), sticker_material.clone() ).rotateZ(-Math.PI/2);
+    this.left_sticker = new THREE.Mesh( top.clone().translate(0, clearance, 0), sticker_material.clone() ).rotateZ(Math.PI/2);
 
     this.add(cube)
+    this.add(this.top_sticker);
+    this.add(this.bottom_sticker);
+    this.add(this.front_sticker);
+    this.add(this.back_sticker);
+    this.add(this.right_sticker);
+    this.add(this.left_sticker);
 
     return this;
   }

@@ -46,7 +46,7 @@ var blue = new THREE.Color(0x0033ee);
 var red = new THREE.Color(1, 0, 0);
 var orange = new THREE.Color(0xff7a00);
 var white = new THREE.Color(1, 1, 1);
-var yellow = new THREE.Color(0xffed00);
+var yellow = new THREE.Color(1, 1, 0);
 var black = new THREE.Color(0x1a1a1a);
 
 function cube_gen(pos_array) {
@@ -60,11 +60,18 @@ function cube_gen(pos_array) {
     cube.position.y = piece[1];
     cube.position.z = piece[2];
 
-    if (cube.position.y === 1) {
-      cube.top_sticker.material.color = green;
-    } else if (cube.position.y === -1) {
-      cube.bottom_sticker.material.color = blue;
-    }
+    if (cube.position.z === 1) // front
+      cube.front_sticker.material.color = white;
+    if (cube.position.z === -1) // back
+      cube.back_sticker.material.color = yellow;
+    if (cube.position.y === 1) // up
+      cube.top_sticker.material.color = orange;
+    if (cube.position.y === -1) // down
+      cube.bottom_sticker.material.color = red;
+    if (cube.position.x === 1) // right
+      cube.right_sticker.material.color = blue;
+    if (cube.position.x === -1) // left
+      cube.left_sticker.material.color = green;
 
     tmp_array.push( cube );
   });

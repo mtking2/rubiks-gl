@@ -16,8 +16,8 @@ controls.minDistance = 6;
 controls.maxDistance = 15;
 controls.update();
 
-var axesHelper = new THREE.AxesHelper( 5 );
-scene.add( axesHelper );
+// var axesHelper = new THREE.AxesHelper( 5 );
+// scene.add( axesHelper );
 
 var renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize( window.innerWidth, window.innerHeight );
@@ -50,7 +50,6 @@ var black = new THREE.Color(0x1a1a1a);
 pieces.all.forEach((p) => { scene.add(p); });
 
 var queue = [], temp_queue = [];
-// var pressedKey = '';
 document.addEventListener('keydown', function(e) {
   let key = e.key;
   if (/^[fFbBuUdDlLrR]$/.test(key)) {
@@ -165,7 +164,6 @@ class RubiksCubePiece extends THREE.Group {
 
     // top
     var top = new THREE.PlaneGeometry(width - radius * 2, depth - radius * 2, widthSegments, depthSegments);
-    // this.top = new THREE.Mesh(new THREE.PlaneGeometry(width - radius * 2, depth - radius * 2, widthSegments, depthSegments), new THREE.MeshPhongMaterial({specular: '#fff',fog: false,color: '#ff9a00',shininess: 10 }));
     top.rotateX(-Math.PI * .5);
     top.translate(0, height * .5, 0);
 
@@ -180,15 +178,23 @@ class RubiksCubePiece extends THREE.Group {
     this.geometry.mergeVertices();
     var cube = new THREE.Mesh( this.geometry, material );
 
-    let clearance = 1e-3;
+    let clearance = 1e-2;
     this.top_sticker = new THREE.Mesh( top.clone().translate(0, clearance, 0), sticker_material.clone() );
-    this.bottom_sticker = new THREE.Mesh( top.clone().translate(0, clearance, 0), sticker_material.clone() ).rotateX(Math.PI);//this.top_sticker.clone().rotateX(Math.PI);
-    // this.bottom_sticker.material.color.setHex(0x0033ee)
+    this.bottom_sticker = new THREE.Mesh( top.clone().translate(0, clearance, 0), sticker_material.clone() ).rotateX(Math.PI);
 
-    this.add(this.top_sticker);
-    this.add(this.bottom_sticker);
+    this.front_sticker = new THREE.Mesh( top.clone().translate(0, clearance, 0), sticker_material.clone() ).rotateX(Math.PI/2);
+    this.back_sticker = new THREE.Mesh( top.clone().translate(0, clearance, 0), sticker_material.clone() ).rotateX(-Math.PI/2);
+
+    this.right_sticker = new THREE.Mesh( top.clone().translate(0, clearance, 0), sticker_material.clone() ).rotateZ(-Math.PI/2);
+    this.left_sticker = new THREE.Mesh( top.clone().translate(0, clearance, 0), sticker_material.clone() ).rotateZ(Math.PI/2);
 
     this.add(cube)
+    this.add(this.top_sticker);
+    this.add(this.bottom_sticker);
+    this.add(this.front_sticker);
+    this.add(this.back_sticker);
+    this.add(this.right_sticker);
+    this.add(this.left_sticker);
 
     return this;
   }
@@ -342,7 +348,7 @@ var blue = new THREE.Color(0x0033ee);
 var red = new THREE.Color(1, 0, 0);
 var orange = new THREE.Color(0xff7a00);
 var white = new THREE.Color(1, 1, 1);
-var yellow = new THREE.Color(0xffed00);
+var yellow = new THREE.Color(1, 1, 0);
 var black = new THREE.Color(0x1a1a1a);
 
 function cube_gen(pos_array) {
@@ -356,11 +362,18 @@ function cube_gen(pos_array) {
     cube.position.y = piece[1];
     cube.position.z = piece[2];
 
-    if (cube.position.y === 1) {
-      cube.top_sticker.material.color = green;
-    } else if (cube.position.y === -1) {
-      cube.bottom_sticker.material.color = blue;
-    }
+    if (cube.position.z === 1) // front
+      cube.front_sticker.material.color = white;
+    if (cube.position.z === -1) // back
+      cube.back_sticker.material.color = yellow;
+    if (cube.position.y === 1) // up
+      cube.top_sticker.material.color = orange;
+    if (cube.position.y === -1) // down
+      cube.bottom_sticker.material.color = red;
+    if (cube.position.x === 1) // right
+      cube.right_sticker.material.color = blue;
+    if (cube.position.x === -1) // left
+      cube.left_sticker.material.color = green;
 
     tmp_array.push( cube );
   });

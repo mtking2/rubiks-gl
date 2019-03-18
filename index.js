@@ -15,8 +15,8 @@ controls.minDistance = 6;
 controls.maxDistance = 15;
 controls.update();
 
-var axesHelper = new THREE.AxesHelper( 5 );
-scene.add( axesHelper );
+// var axesHelper = new THREE.AxesHelper( 5 );
+// scene.add( axesHelper );
 
 var renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize( window.innerWidth, window.innerHeight );
@@ -49,7 +49,6 @@ var black = new THREE.Color(0x1a1a1a);
 pieces.all.forEach((p) => { scene.add(p); });
 
 var queue = [], temp_queue = [];
-// var pressedKey = '';
 document.addEventListener('keydown', function(e) {
   let key = e.key;
   if (/^[fFbBuUdDlLrR]$/.test(key)) {
