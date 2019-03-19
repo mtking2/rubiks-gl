@@ -103,14 +103,15 @@ class RubiksCubePiece extends THREE.Group {
     var cube = new THREE.Mesh( this.geometry, material );
 
     let clearance = 1e-2;
-    this.top_sticker = new THREE.Mesh( top.clone().translate(0, clearance, 0), sticker_material.clone() );
-    this.bottom_sticker = new THREE.Mesh( top.clone().translate(0, clearance, 0), sticker_material.clone() ).rotateX(Math.PI);
+    let scale = 0.95;
+    this.top_sticker = new THREE.Mesh( top.clone().translate(0, clearance, 0).scale(scale,1,scale), sticker_material.clone() );
+    this.bottom_sticker = new THREE.Mesh( top.clone().translate(0, clearance, 0).scale(scale,1,scale), sticker_material.clone() ).rotateX(Math.PI);
 
-    this.front_sticker = new THREE.Mesh( top.clone().translate(0, clearance, 0), sticker_material.clone() ).rotateX(Math.PI/2);
-    this.back_sticker = new THREE.Mesh( top.clone().translate(0, clearance, 0), sticker_material.clone() ).rotateX(-Math.PI/2);
+    this.front_sticker = new THREE.Mesh( top.clone().translate(0, clearance, 0).scale(scale,1,scale), sticker_material.clone() ).rotateX(Math.PI/2);
+    this.back_sticker = new THREE.Mesh( top.clone().translate(0, clearance, 0).scale(scale,1,scale), sticker_material.clone() ).rotateX(-Math.PI/2);
 
-    this.right_sticker = new THREE.Mesh( top.clone().translate(0, clearance, 0), sticker_material.clone() ).rotateZ(-Math.PI/2);
-    this.left_sticker = new THREE.Mesh( top.clone().translate(0, clearance, 0), sticker_material.clone() ).rotateZ(Math.PI/2);
+    this.right_sticker = new THREE.Mesh( top.clone().translate(0, clearance, 0).scale(scale,1,scale), sticker_material.clone() ).rotateZ(-Math.PI/2);
+    this.left_sticker = new THREE.Mesh( top.clone().translate(0, clearance, 0).scale(scale,1,scale), sticker_material.clone() ).rotateZ(Math.PI/2);
 
     this.add(cube)
     this.add(this.top_sticker);

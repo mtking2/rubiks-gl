@@ -38,8 +38,8 @@ scene.add( light2 );
 scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 
 
-var geometry = new THREE.SphereGeometry( 0.85, 32, 32 );
-var material = new THREE.MeshBasicMaterial( {color: 0x1a1a1a} );
+var geometry = new THREE.SphereGeometry( 1.125, 10, 10 );
+var material = new THREE.MeshBasicMaterial( {color: 0x1a1a1a, wireframe: false} );
 var sphere = new THREE.Mesh( geometry, material );
 scene.add( sphere );
 
@@ -179,14 +179,15 @@ class RubiksCubePiece extends THREE.Group {
     var cube = new THREE.Mesh( this.geometry, material );
 
     let clearance = 1e-2;
-    this.top_sticker = new THREE.Mesh( top.clone().translate(0, clearance, 0), sticker_material.clone() );
-    this.bottom_sticker = new THREE.Mesh( top.clone().translate(0, clearance, 0), sticker_material.clone() ).rotateX(Math.PI);
+    let scale = 0.95;
+    this.top_sticker = new THREE.Mesh( top.clone().translate(0, clearance, 0).scale(scale,1,scale), sticker_material.clone() );
+    this.bottom_sticker = new THREE.Mesh( top.clone().translate(0, clearance, 0).scale(scale,1,scale), sticker_material.clone() ).rotateX(Math.PI);
 
-    this.front_sticker = new THREE.Mesh( top.clone().translate(0, clearance, 0), sticker_material.clone() ).rotateX(Math.PI/2);
-    this.back_sticker = new THREE.Mesh( top.clone().translate(0, clearance, 0), sticker_material.clone() ).rotateX(-Math.PI/2);
+    this.front_sticker = new THREE.Mesh( top.clone().translate(0, clearance, 0).scale(scale,1,scale), sticker_material.clone() ).rotateX(Math.PI/2);
+    this.back_sticker = new THREE.Mesh( top.clone().translate(0, clearance, 0).scale(scale,1,scale), sticker_material.clone() ).rotateX(-Math.PI/2);
 
-    this.right_sticker = new THREE.Mesh( top.clone().translate(0, clearance, 0), sticker_material.clone() ).rotateZ(-Math.PI/2);
-    this.left_sticker = new THREE.Mesh( top.clone().translate(0, clearance, 0), sticker_material.clone() ).rotateZ(Math.PI/2);
+    this.right_sticker = new THREE.Mesh( top.clone().translate(0, clearance, 0).scale(scale,1,scale), sticker_material.clone() ).rotateZ(-Math.PI/2);
+    this.left_sticker = new THREE.Mesh( top.clone().translate(0, clearance, 0).scale(scale,1,scale), sticker_material.clone() ).rotateZ(Math.PI/2);
 
     this.add(cube)
     this.add(this.top_sticker);

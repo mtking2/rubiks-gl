@@ -37,8 +37,8 @@ scene.add( light2 );
 scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 
 
-var geometry = new THREE.SphereGeometry( 0.85, 32, 32 );
-var material = new THREE.MeshBasicMaterial( {color: 0x1a1a1a} );
+var geometry = new THREE.SphereGeometry( 1.125, 10, 10 );
+var material = new THREE.MeshBasicMaterial( {color: 0x1a1a1a, wireframe: false} );
 var sphere = new THREE.Mesh( geometry, material );
 scene.add( sphere );
 
