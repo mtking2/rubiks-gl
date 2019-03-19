@@ -1,4 +1,4 @@
-var pieces = require('./pieces.js');
+var pieces = require('./pieces');
 
 var locked = false;
 function isLocked() {
@@ -28,40 +28,40 @@ function doMove(move) {
 
   switch (move) {
 
-    case 'f': case 'F': case 'b': case 'B':
+    case 'F': case "F'": case 'B': case "B'":
       rotVector = new THREE.Vector3( 0, 0, -1 );
       axis = 'z';
       transAxis1 = 'y';
       transAxis2 = 'x';
 
-      thres = (['b','B'].includes(move)) ? -1 : 1;
+      thres = (['B',"B'"].includes(move)) ? -1 : 1;
       theta = rads;
 
-      theta *= (['F','b'].includes(move)) ? -1 : 1
+      theta *= (["F'",'B'].includes(move)) ? -1 : 1
       break;
 
-    case 'u': case 'U': case 'd': case 'D':
+    case 'U': case "U'": case 'D': case "D'":
       rotVector = new THREE.Vector3( 0, -1, 0 );
       axis = 'y';
       transAxis1 = 'x';
       transAxis2 = 'z';
 
-      thres = (['d','D'].includes(move)) ? -1 : 1;
+      thres = (['D',"D'"].includes(move)) ? -1 : 1;
       theta = rads;
 
-      theta *= (['U','d'].includes(move)) ? -1 : 1
+      theta *= (["U'",'D'].includes(move)) ? -1 : 1
       break;
 
-    case 'l': case 'L': case 'r': case 'R':
+    case 'L': case "L'": case 'R': case "R'":
       rotVector = new THREE.Vector3( -1, 0, 0 );
       axis = 'x';
       transAxis1 = 'z';
       transAxis2 = 'y';
 
-      thres = (['r','R'].includes(move)) ? -1 : 1;
+      thres = (['R',"R'"].includes(move)) ? -1 : 1;
       theta = rads;
 
-      theta *= (['L','r'].includes(move)) ? -1 : 1
+      theta *= (["L'",'R'].includes(move)) ? -1 : 1
       break;
 
   }

@@ -19,15 +19,39 @@ controls.update();
 // var axesHelper = new THREE.AxesHelper( 5 );
 // scene.add( axesHelper );
 
-var renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize( window.innerWidth, window.innerHeight );
-document.body.appendChild( renderer.domElement );
-window.addEventListener( 'resize', onWindowResize, false );
-function onWindowResize() {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
+function init(renderer) {
+  renderer.setPixelRatio( window.devicePixelRatio );
   renderer.setSize( window.innerWidth, window.innerHeight );
-}
+
+  document.body.appendChild( renderer.domElement );
+
+  window.addEventListener( 'resize', onWindowResize, false );
+  function onWindowResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize( window.innerWidth, window.innerHeight );
+  };
+};
+
+var renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'default' });
+init(renderer);
+var renderHD = false;
+
+$('#toggle-quality').click(function() {
+  console.log('click');
+  $('canvas').remove();
+  renderHD = !renderHD;
+
+  if (renderHD) {
+    renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+    init(renderer);
+    $(this).html('Quality: High');
+  } else {
+    renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'default' });
+    init(renderer);
+    $(this).html('Quality: Low');
+  }
+});
 
 var light = new THREE.PointLight( 0xffffff, 1, 50 );
 var light2 = new THREE.PointLight( 0xffffff, 1, 50 );
@@ -36,7 +60,6 @@ light2.position.set( -10, 10, -10 );
 scene.add( light );
 scene.add( light2 );
 scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-
 
 var geometry = new THREE.SphereGeometry( 1.125, 10, 10 );
 var material = new THREE.MeshBasicMaterial( {color: 0x1a1a1a, wireframe: false} );
@@ -51,24 +74,60 @@ pieces.all.forEach((p) => { scene.add(p); });
 
 var queue = [], temp_queue = [];
 document.addEventListener('keydown', function(e) {
-  let key = e.key;
-  if (/^[fFbBuUdDlLrR]$/.test(key)) {
-    temp_queue.push(e.key);
-    queue.push(e.key);
+
+  if (/^[fFbBuUdDlLrR]$/.test(e.key)) {
+    let key = '';
+    switch (e.key) {
+      case 'f': key = 'F'; break;
+      case 'F': key = "F'"; break;
+      case 'b': key = 'B'; break;
+      case 'B': key = "B'"; break;
+      case 'u': key = 'U'; break;
+      case 'U': key = "U'"; break;
+      case 'd': key = 'D'; break;
+      case 'D': key = "D'"; break;
+      case 'l': key = 'L'; break;
+      case 'L': key = "L'"; break;
+      case 'r': key = 'R'; break;
+      case 'R': key = "R'"; break;
+    }
+    temp_queue.push(key);
+    queue.push(key);
   }
 });
 
-var animate = function () {
+function reverseSolve() {
+  var id = requestAnimationFrame( reverseSolve );
+  if (queue.length > 0) {
+    if (!moves.isLocked()) {
+      let move = queue.pop();
+      let reverseMove = move.includes("'") ? move.replace("'",'') : `${move}'`;
+      moves.doMove(reverseMove);
+      $('.move-list').text(queue.join(' '));
+    }
+  } else {
+    cancelAnimationFrame( id );
+  }
+  controls.update();
+  renderer.render( scene, camera );
+}
+
+$('#reverse-solve').click(function() {
+  reverseSolve();
+});
+
+function animate() {
 	requestAnimationFrame( animate );
 
   if (!moves.isLocked() && temp_queue.length > 0) {
     let move = temp_queue.shift();
-    moves.doMove(move);
     console.log(move);
+    moves.doMove(move);
+    $('.move-list').text(queue.join(' '));
   }
 
   controls.update();
-	renderer.render( scene, camera );
+  renderer.render( scene, camera );
 };
 
 animate();
@@ -95,7 +154,7 @@ class RubiksCubePiece extends THREE.Group {
     let halfDepth = depth * .5 - radius;
 
     this.geometry = new THREE.Geometry();
-    var material = new THREE.MeshLambertMaterial( { color: 0x1a1a1a } );
+    var material = new THREE.MeshLambertMaterial( { color: 0x1a1a1a, wireframe: false } );
     var sticker_material = new THREE.MeshLambertMaterial( { color: 0x1a1a1a } );
 
     // corners - 4 eighths of a sphere
@@ -205,7 +264,7 @@ class RubiksCubePiece extends THREE.Group {
 module.exports = RubiksCubePiece;
 
 },{}],3:[function(require,module,exports){
-var pieces = require('./pieces.js');
+var pieces = require('./pieces');
 
 var locked = false;
 function isLocked() {
@@ -235,40 +294,40 @@ function doMove(move) {
 
   switch (move) {
 
-    case 'f': case 'F': case 'b': case 'B':
+    case 'F': case "F'": case 'B': case "B'":
       rotVector = new THREE.Vector3( 0, 0, -1 );
       axis = 'z';
       transAxis1 = 'y';
       transAxis2 = 'x';
 
-      thres = (['b','B'].includes(move)) ? -1 : 1;
+      thres = (['B',"B'"].includes(move)) ? -1 : 1;
       theta = rads;
 
-      theta *= (['F','b'].includes(move)) ? -1 : 1
+      theta *= (["F'",'B'].includes(move)) ? -1 : 1
       break;
 
-    case 'u': case 'U': case 'd': case 'D':
+    case 'U': case "U'": case 'D': case "D'":
       rotVector = new THREE.Vector3( 0, -1, 0 );
       axis = 'y';
       transAxis1 = 'x';
       transAxis2 = 'z';
 
-      thres = (['d','D'].includes(move)) ? -1 : 1;
+      thres = (['D',"D'"].includes(move)) ? -1 : 1;
       theta = rads;
 
-      theta *= (['U','d'].includes(move)) ? -1 : 1
+      theta *= (["U'",'D'].includes(move)) ? -1 : 1
       break;
 
-    case 'l': case 'L': case 'r': case 'R':
+    case 'L': case "L'": case 'R': case "R'":
       rotVector = new THREE.Vector3( -1, 0, 0 );
       axis = 'x';
       transAxis1 = 'z';
       transAxis2 = 'y';
 
-      thres = (['r','R'].includes(move)) ? -1 : 1;
+      thres = (['R',"R'"].includes(move)) ? -1 : 1;
       theta = rads;
 
-      theta *= (['L','r'].includes(move)) ? -1 : 1
+      theta *= (["L'",'R'].includes(move)) ? -1 : 1
       break;
 
   }
@@ -300,7 +359,7 @@ module.exports = {
   doMove: doMove
 }
 
-},{"./pieces.js":4}],4:[function(require,module,exports){
+},{"./pieces":4}],4:[function(require,module,exports){
 var RubiksCubePiece = require('./RubiksCubePiece');
 
 var center_pos = [
@@ -357,7 +416,7 @@ function cube_gen(pos_array) {
   let tmp_array = [];
   pos_array.forEach((piece) => {
     let size = 0.965;
-    var cube = new RubiksCubePiece(size, size, size, 0.075, 1, 1, 1, 5);
+    var cube = new RubiksCubePiece(size, size, size, 0.075, 1, 1, 1, 1);
 
     cube.position.x = piece[0];
     cube.position.y = piece[1];

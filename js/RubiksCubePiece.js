@@ -19,7 +19,7 @@ class RubiksCubePiece extends THREE.Group {
     let halfDepth = depth * .5 - radius;
 
     this.geometry = new THREE.Geometry();
-    var material = new THREE.MeshLambertMaterial( { color: 0x1a1a1a } );
+    var material = new THREE.MeshLambertMaterial( { color: 0x1a1a1a, wireframe: false } );
     var sticker_material = new THREE.MeshLambertMaterial( { color: 0x1a1a1a } );
 
     // corners - 4 eighths of a sphere

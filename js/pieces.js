@@ -54,7 +54,7 @@ function cube_gen(pos_array) {
   let tmp_array = [];
   pos_array.forEach((piece) => {
     let size = 0.965;
-    var cube = new RubiksCubePiece(size, size, size, 0.075, 1, 1, 1, 5);
+    var cube = new RubiksCubePiece(size, size, size, 0.075, 1, 1, 1, 1);
 
     cube.position.x = piece[0];
     cube.position.y = piece[1];

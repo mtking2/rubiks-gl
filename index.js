@@ -18,15 +18,39 @@ controls.update();
 // var axesHelper = new THREE.AxesHelper( 5 );
 // scene.add( axesHelper );
 
-var renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize( window.innerWidth, window.innerHeight );
-document.body.appendChild( renderer.domElement );
-window.addEventListener( 'resize', onWindowResize, false );
-function onWindowResize() {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
+function init(renderer) {
+  renderer.setPixelRatio( window.devicePixelRatio );
   renderer.setSize( window.innerWidth, window.innerHeight );
-}
+
+  document.body.appendChild( renderer.domElement );
+
+  window.addEventListener( 'resize', onWindowResize, false );
+  function onWindowResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize( window.innerWidth, window.innerHeight );
+  };
+};
+
+var renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'default' });
+init(renderer);
+var renderHD = false;
+
+$('#toggle-quality').click(function() {
+  console.log('click');
+  $('canvas').remove();
+  renderHD = !renderHD;
+
+  if (renderHD) {
+    renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+    init(renderer);
+    $(this).html('Quality: High');
+  } else {
+    renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'default' });
+    init(renderer);
+    $(this).html('Quality: Low');
+  }
+});
 
 var light = new THREE.PointLight( 0xffffff, 1, 50 );
 var light2 = new THREE.PointLight( 0xffffff, 1, 50 );
@@ -35,7 +59,6 @@ light2.position.set( -10, 10, -10 );
 scene.add( light );
 scene.add( light2 );
 scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-
 
 var geometry = new THREE.SphereGeometry( 1.125, 10, 10 );
 var material = new THREE.MeshBasicMaterial( {color: 0x1a1a1a, wireframe: false} );
@@ -50,24 +73,60 @@ pieces.all.forEach((p) => { scene.add(p); });
 
 var queue = [], temp_queue = [];
 document.addEventListener('keydown', function(e) {
-  let key = e.key;
-  if (/^[fFbBuUdDlLrR]$/.test(key)) {
-    temp_queue.push(e.key);
-    queue.push(e.key);
+
+  if (/^[fFbBuUdDlLrR]$/.test(e.key)) {
+    let key = '';
+    switch (e.key) {
+      case 'f': key = 'F'; break;
+      case 'F': key = "F'"; break;
+      case 'b': key = 'B'; break;
+      case 'B': key = "B'"; break;
+      case 'u': key = 'U'; break;
+      case 'U': key = "U'"; break;
+      case 'd': key = 'D'; break;
+      case 'D': key = "D'"; break;
+      case 'l': key = 'L'; break;
+      case 'L': key = "L'"; break;
+      case 'r': key = 'R'; break;
+      case 'R': key = "R'"; break;
+    }
+    temp_queue.push(key);
+    queue.push(key);
   }
 });
 
-var animate = function () {
+function reverseSolve() {
+  var id = requestAnimationFrame( reverseSolve );
+  if (queue.length > 0) {
+    if (!moves.isLocked()) {
+      let move = queue.pop();
+      let reverseMove = move.includes("'") ? move.replace("'",'') : `${move}'`;
+      moves.doMove(reverseMove);
+      $('.move-list').text(queue.join(' '));
+    }
+  } else {
+    cancelAnimationFrame( id );
+  }
+  controls.update();
+  renderer.render( scene, camera );
+}
+
+$('#reverse-solve').click(function() {
+  reverseSolve();
+});
+
+function animate() {
 	requestAnimationFrame( animate );
 
   if (!moves.isLocked() && temp_queue.length > 0) {
     let move = temp_queue.shift();
-    moves.doMove(move);
     console.log(move);
+    moves.doMove(move);
+    $('.move-list').text(queue.join(' '));
   }
 
   controls.update();
-	renderer.render( scene, camera );
+  renderer.render( scene, camera );
 };
 
 animate();
