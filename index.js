@@ -95,35 +95,48 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
-function reverseSolve() {
-  var id = requestAnimationFrame( reverseSolve );
+var reverseSolve = false;
+function doReverseSolve() {
   if (queue.length > 0) {
-    if (!moves.isLocked()) {
-      let move = queue.pop();
-      let reverseMove = move.includes("'") ? move.replace("'",'') : `${move}'`;
-      moves.doMove(reverseMove);
-      $('.move-list').text(queue.join(' '));
-    }
+    let move = queue.pop();
+    let reverseMove = move.includes("'") ? move.replace("'",'') : `${move}'`;
+    moves.doMove(reverseMove);
   } else {
-    cancelAnimationFrame( id );
+    reverseSolve = false;
+    queue = [];
+    temp_queue = [];
   }
-  controls.update();
-  renderer.render( scene, camera );
 }
 
 $('#reverse-solve').click(function() {
-  reverseSolve();
+  reverseSolve = true;
 });
+
+function simplifyMoves(q) {
+  let qStr = q.join('');
+  qStr = qStr.replace(/(.)\1'|(.)'\2(?!')|(.'?)\3{3}/g, '');
+
+  qStr = qStr.replace(/(.')\1{2}/g, "$1".replace("'",''));
+  qStr = qStr.replace(/(.)\1{2}/g, "$1'");
+
+  qStr = qStr.replace(/.'?/g, '$& ').trim();
+  return qStr.split(' ')
+}
 
 function animate() {
 	requestAnimationFrame( animate );
 
-  if (!moves.isLocked() && temp_queue.length > 0) {
+  if (!moves.isLocked() && reverseSolve) {
+    doReverseSolve();
+  } else if (!moves.isLocked() && temp_queue.length > 0) {
     let move = temp_queue.shift();
-    console.log(move);
     moves.doMove(move);
-    $('.move-list').text(queue.join(' '));
+    queue = simplifyMoves(queue);
+    console.clear();
+    console.log(queue.join(' '));
   }
+
+  $('.move-list').text(queue.join(' '));
 
   controls.update();
   renderer.render( scene, camera );
