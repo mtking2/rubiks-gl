@@ -58,16 +58,16 @@ function doMove(move) {
       theta *= (["U'",'D'].includes(move)) ? -1 : 1
       break;
 
-    case 'L': case "L'": case 'R': case "R'":
+    case 'R': case "R'": case 'L': case "L'":
       rotVector = new THREE.Vector3( -1, 0, 0 );
       axis = 'x';
       transAxis1 = 'z';
       transAxis2 = 'y';
 
-      thres = (['R',"R'"].includes(move)) ? -1 : 1;
+      thres = (['L',"L'"].includes(move)) ? -1 : 1;
       theta = rads;
 
-      theta *= (["L'",'R'].includes(move)) ? -1 : 1
+      theta *= (["L'",'R'].includes(move)) ? 1 : -1
       break;
 
     case 'X': case "X'":

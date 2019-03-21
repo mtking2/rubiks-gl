@@ -146,6 +146,7 @@ function doReverseSolve() {
     let reverseMove = move.includes("'") ? move.replace("'",'') : `${move}'`;
     moves.doMove(reverseMove);
   } else {
+    moves.setIncrement(8);
     reverseSolve = false;
     queue = [];
     temp_queue = [];
@@ -153,6 +154,7 @@ function doReverseSolve() {
 }
 
 $('#reverse-solve').click(function() {
+  moves.setIncrement(5);
   reverseSolve = true;
 });
 

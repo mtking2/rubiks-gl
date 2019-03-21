@@ -147,6 +147,7 @@ function doReverseSolve() {
     let reverseMove = move.includes("'") ? move.replace("'",'') : `${move}'`;
     moves.doMove(reverseMove);
   } else {
+    moves.setIncrement(8);
     reverseSolve = false;
     queue = [];
     temp_queue = [];
@@ -154,6 +155,7 @@ function doReverseSolve() {
 }
 
 $('#reverse-solve').click(function() {
+  moves.setIncrement(5);
   reverseSolve = true;
 });
 
@@ -387,16 +389,16 @@ function doMove(move) {
       theta *= (["U'",'D'].includes(move)) ? -1 : 1
       break;
 
-    case 'L': case "L'": case 'R': case "R'":
+    case 'R': case "R'": case 'L': case "L'":
       rotVector = new THREE.Vector3( -1, 0, 0 );
       axis = 'x';
       transAxis1 = 'z';
       transAxis2 = 'y';
 
-      thres = (['R',"R'"].includes(move)) ? -1 : 1;
+      thres = (['L',"L'"].includes(move)) ? -1 : 1;
       theta = rads;
 
-      theta *= (["L'",'R'].includes(move)) ? -1 : 1
+      theta *= (["L'",'R'].includes(move)) ? 1 : -1
       break;
 
     case 'X': case "X'":
