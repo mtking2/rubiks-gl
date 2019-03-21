@@ -41,7 +41,6 @@ document.body.appendChild( c );
 
 var renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'default', canvas: c });
 init(renderer);
-
 var renderHD = false;
 
 $('#toggle-quality').click(function() {
@@ -106,6 +105,33 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
+var scramble = false;
+var scrambleQueue = []
+function doScramble() {
+  if (scrambleQueue.length > 0) {
+    moves.doMove(scrambleQueue.shift());
+  } else {
+    moves.setIncrement(8);
+    scramble = false;
+  }
+}
+
+$('#scramble').click(function() {
+  let m = ['F','B','U','D','R','L']
+  m = m.concat(m.map(e => e+"'"));
+  moves.setIncrement(1);
+
+  let scrambleMoves = []
+  for (let i=0; i<50; i++) {
+    let move = m[Math.floor(Math.random() * m.length)];
+    scrambleMoves.push( move );
+  }
+  scrambleMoves = simplifyMoves(scrambleMoves);
+  scrambleQueue = scrambleMoves;
+  queue = queue.concat(scrambleMoves);
+  scramble = true;
+});
+
 var reverseSolve = false;
 function doReverseSolve() {
   if (queue.length > 0) {
@@ -123,6 +149,7 @@ $('#reverse-solve').click(function() {
   reverseSolve = true;
 });
 
+
 function simplifyMoves(q) {
   let qStr = q.join('');
   qStr = qStr.replace(/(.)\1'|(.)'\2(?!')|(.'?)\3{3}/g, '');
@@ -139,6 +166,8 @@ function animate() {
 
   if (!moves.isLocked() && reverseSolve) {
     doReverseSolve();
+  } else if (!moves.isLocked() && scramble) {
+    doScramble();
   } else if (!moves.isLocked() && temp_queue.length > 0) {
     let move = temp_queue.shift();
     moves.doMove(move);

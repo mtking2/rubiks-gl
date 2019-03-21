@@ -15,6 +15,11 @@ function unlock() {
 
 var inc = 8;
 var rads = (Math.PI/2)/inc;
+function setIncrement(i) {
+  inc = i;
+  rads = (Math.PI/2)/inc;
+}
+
 var step_count = 0;
 
 function doMove(move) {
@@ -90,5 +95,6 @@ function doMove(move) {
 
 module.exports = {
   isLocked: isLocked,
+  setIncrement: setIncrement,
   doMove: doMove
 }
