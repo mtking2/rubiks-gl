@@ -29,7 +29,8 @@ function doMove(move) {
       axis = '',
       transAxis1 = '',
       transAxis2 = '',
-      thres = null;
+      thres = null,
+      faceMove = true;
 
   switch (move) {
 
@@ -69,11 +70,41 @@ function doMove(move) {
       theta *= (["L'",'R'].includes(move)) ? -1 : 1
       break;
 
+    case 'X': case "X'":
+      rotVector = new THREE.Vector3( -1, 0, 0 );
+      axis = 'x';
+      transAxis1 = 'z';
+      transAxis2 = 'y';
+      faceMove = false;
+      theta = rads;
+      theta *= (move.includes("'")) ? -1 : 1
+      break;
+
+    case 'Y': case "Y'":
+      rotVector = new THREE.Vector3( 0, -1, 0 );
+      axis = 'y';
+      transAxis1 = 'x';
+      transAxis2 = 'z';
+      faceMove = false;
+      theta = rads;
+      theta *= (move.includes("'")) ? -1 : 1
+      break;
+
+    case 'Z': case "Z'":
+      rotVector = new THREE.Vector3( 0, 0, -1 );
+      axis = 'z';
+      transAxis1 = 'y';
+      transAxis2 = 'x';
+      faceMove = false;
+      theta = rads;
+      theta *= (move.includes("'")) ? -1 : 1
+      break;
+
   }
 
   if (step_count < inc) {
     pieces.all.forEach((piece) => {
-      if (Math.round(piece.position[axis]) === thres) {
+      if (Math.round(piece.position[axis]) === thres || !faceMove) {
         let x_prime = piece.position[transAxis1] * Math.cos(theta) - piece.position[transAxis2] * Math.sin(theta);
         let y_prime = piece.position[transAxis1] * Math.sin(theta) + piece.position[transAxis2] * Math.cos(theta);
         piece.position[transAxis1] = x_prime;

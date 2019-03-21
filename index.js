@@ -84,7 +84,7 @@ pieces.all.forEach((p) => { scene.add(p); });
 var queue = [], temp_queue = [];
 document.addEventListener('keydown', function(e) {
 
-  if (/^[fFbBuUdDlLrR]$/.test(e.key)) {
+  if (/^[fFbBuUdDlLrRxXyYzZ]$/.test(e.key)) {
     let key = '';
     switch (e.key) {
       case 'f': key = 'F'; break;
@@ -99,6 +99,13 @@ document.addEventListener('keydown', function(e) {
       case 'L': key = "L'"; break;
       case 'r': key = 'R'; break;
       case 'R': key = "R'"; break;
+      case 'x': key = 'X'; break;
+      case 'X': key = "X'"; break;
+      case 'y': key = 'Y'; break;
+      case 'Y': key = "Y'"; break;
+      case 'z': key = 'Z'; break;
+      case 'Z': key = "Z'"; break;
+      default: key = e.key; break;
     }
     temp_queue.push(key);
     queue.push(key);

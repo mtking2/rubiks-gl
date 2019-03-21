@@ -85,7 +85,7 @@ pieces.all.forEach((p) => { scene.add(p); });
 var queue = [], temp_queue = [];
 document.addEventListener('keydown', function(e) {
 
-  if (/^[fFbBuUdDlLrR]$/.test(e.key)) {
+  if (/^[fFbBuUdDlLrRxXyYzZ]$/.test(e.key)) {
     let key = '';
     switch (e.key) {
       case 'f': key = 'F'; break;
@@ -100,6 +100,13 @@ document.addEventListener('keydown', function(e) {
       case 'L': key = "L'"; break;
       case 'r': key = 'R'; break;
       case 'R': key = "R'"; break;
+      case 'x': key = 'X'; break;
+      case 'X': key = "X'"; break;
+      case 'y': key = 'Y'; break;
+      case 'Y': key = "Y'"; break;
+      case 'z': key = 'Z'; break;
+      case 'Z': key = "Z'"; break;
+      default: key = e.key; break;
     }
     temp_queue.push(key);
     queue.push(key);
@@ -351,7 +358,8 @@ function doMove(move) {
       axis = '',
       transAxis1 = '',
       transAxis2 = '',
-      thres = null;
+      thres = null,
+      faceMove = true;
 
   switch (move) {
 
@@ -391,11 +399,41 @@ function doMove(move) {
       theta *= (["L'",'R'].includes(move)) ? -1 : 1
       break;
 
+    case 'X': case "X'":
+      rotVector = new THREE.Vector3( -1, 0, 0 );
+      axis = 'x';
+      transAxis1 = 'z';
+      transAxis2 = 'y';
+      faceMove = false;
+      theta = rads;
+      theta *= (move.includes("'")) ? -1 : 1
+      break;
+
+    case 'Y': case "Y'":
+      rotVector = new THREE.Vector3( 0, -1, 0 );
+      axis = 'y';
+      transAxis1 = 'x';
+      transAxis2 = 'z';
+      faceMove = false;
+      theta = rads;
+      theta *= (move.includes("'")) ? -1 : 1
+      break;
+
+    case 'Z': case "Z'":
+      rotVector = new THREE.Vector3( 0, 0, -1 );
+      axis = 'z';
+      transAxis1 = 'y';
+      transAxis2 = 'x';
+      faceMove = false;
+      theta = rads;
+      theta *= (move.includes("'")) ? -1 : 1
+      break;
+
   }
 
   if (step_count < inc) {
     pieces.all.forEach((piece) => {
-      if (Math.round(piece.position[axis]) === thres) {
+      if (Math.round(piece.position[axis]) === thres || !faceMove) {
         let x_prime = piece.position[transAxis1] * Math.cos(theta) - piece.position[transAxis2] * Math.sin(theta);
         let y_prime = piece.position[transAxis1] * Math.sin(theta) + piece.position[transAxis2] * Math.cos(theta);
         piece.position[transAxis1] = x_prime;
