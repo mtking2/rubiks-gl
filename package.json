@@ -1,17 +1,23 @@
 {
   "name": "cube_gl",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Yet another WebGL Rubik's cube",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mtking2/rubiks-gl.git"
+  },
   "main": "index.js",
   "scripts": {
-    "build": "rm -rf build && mkdir -p build && ./node_modules/.bin/browserify ./index.js > ./build/index.js",
-    "watch": "nodemon -e js,html -i ./build -x \"npm run build\"",
+    "compile": "node compile.js",
+    "build": "npm run compile && rm -rf build && mkdir -p build && ./node_modules/.bin/browserify ./index.js > ./build/index.js",
+    "watch": "nodemon -e js,html,sass -i ./build -x \"npm run build\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Michael King",
   "license": "MIT",
   "dependencies": {
     "browserify": "^16.2.2",
+    "node-sass": "^4.11.0",
     "nodemon": "^1.18.4"
   }
 }

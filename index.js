@@ -4,6 +4,10 @@ var moves = require('./js/moves');
 var scene = new THREE.Scene();
 scene.background = new THREE.Color( 0x888888 )
 
+var stats = new Stats();
+stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
+document.body.appendChild( stats.dom );
+
 var camera = new THREE.PerspectiveCamera( 50, window.innerWidth/window.innerHeight, 1, 100 );
 camera.position.x = 6;
 camera.position.y = 3;
@@ -32,25 +36,32 @@ function init(renderer) {
   };
 };
 
-var renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'default' });
+var c = document.createElement('canvas'); c.id = 'scene';
+document.body.appendChild( c );
+
+var renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'default', canvas: c });
 init(renderer);
+
 var renderHD = false;
 
 $('#toggle-quality').click(function() {
   console.log('click');
-  $('canvas').remove();
+  $('#scene').remove();
+  c = document.createElement('canvas'); c.id = 'scene';
+  document.body.appendChild( c );
   renderHD = !renderHD;
 
   if (renderHD) {
-    renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+    renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance', canvas: c });
     init(renderer);
     $(this).html('Quality: High');
   } else {
-    renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'default' });
+    renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'default', canvas: c });
     init(renderer);
     $(this).html('Quality: Low');
   }
 });
+
 
 var light = new THREE.PointLight( 0xffffff, 1, 50 );
 var light2 = new THREE.PointLight( 0xffffff, 1, 50 );
@@ -124,7 +135,7 @@ function simplifyMoves(q) {
 }
 
 function animate() {
-	requestAnimationFrame( animate );
+  stats.begin();
 
   if (!moves.isLocked() && reverseSolve) {
     doReverseSolve();
@@ -139,7 +150,10 @@ function animate() {
   $('.move-list').text(queue.join(' '));
 
   controls.update();
+  stats.end();
+
   renderer.render( scene, camera );
+  requestAnimationFrame( animate );
 };
 
 animate();
