@@ -140,12 +140,14 @@ $('#scramble').click(function() {
   scramble = true;
 });
 
-var reverseSolve = false;
+var reverseSolve = false, undo = false;
+
 function doReverseSolve() {
   if (queue.length > 0) {
     let move = queue.pop();
     let reverseMove = move.includes("'") ? move.replace("'",'') : `${move}'`;
     moves.doMove(reverseMove);
+    undo = false;
   } else {
     moves.setIncrement(8);
     reverseSolve = false;
@@ -159,6 +161,18 @@ $('#reverse-solve').click(function() {
   reverseSolve = true;
 });
 
+$('#undo').click(function() {
+  undo = true;
+});
+
+function updateUI() {
+  $('.move-list').text(queue.join(' '));
+  if (queue.length > 0) {
+    $('#undo, #reverse-solve').show();
+  } else {
+    $('#undo, #reverse-solve').hide();
+  }
+};
 
 function simplifyMoves(q) {
   let qStr = q.join('');
@@ -171,10 +185,12 @@ function simplifyMoves(q) {
   return qStr.split(' ')
 }
 
-function animate() {
+var last = 0;
+function animate(now) {
+
   stats.begin();
 
-  if (!moves.isLocked() && reverseSolve) {
+  if (!moves.isLocked() && (reverseSolve || undo)) {
     doReverseSolve();
   } else if (!moves.isLocked() && scramble) {
     doScramble();
@@ -186,7 +202,11 @@ function animate() {
     console.log(queue.join(' '));
   }
 
-  $('.move-list').text(queue.join(' '));
+  let ms = 100;
+  if(!last || now - last >= ms) { // do some stuff every "ms" milliseconds
+    last = now;
+    updateUI();
+  }
 
   controls.update();
   stats.end();

@@ -3,6 +3,12 @@
   top: 10px;
   width: 100%;
   text-align: center; }
+  #ui p.move-list {
+    font-size: 16pt;
+    color: white;
+    margin-top: 0.5rem; }
+  #ui .btn#undo, #ui .btn#reverse-solve {
+    display: none; }
 
 body {
   touch-action: none;
