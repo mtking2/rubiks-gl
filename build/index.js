@@ -14,12 +14,6 @@ camera.position.x = 6;
 camera.position.y = 3;
 camera.position.z = 6;
 
-var controls = new THREE.OrbitControls( camera );
-controls.enablePan = false;
-controls.minDistance = 6;
-controls.maxDistance = 15;
-controls.update();
-
 // var axesHelper = new THREE.AxesHelper( 5 );
 // scene.add( axesHelper );
 
@@ -28,6 +22,7 @@ function init(renderer) {
   renderer.setSize( window.innerWidth, window.innerHeight );
 
   document.body.appendChild( renderer.domElement );
+  controls = new THREE.OrbitControls( camera, renderer.domElement );
 
   window.addEventListener( 'resize', onWindowResize, false );
   function onWindowResize() {
@@ -44,8 +39,13 @@ var renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'def
 init(renderer);
 var renderHD = false;
 
+var controls = new THREE.OrbitControls( camera, renderer.domElement );
+controls.enablePan = false;
+controls.minDistance = 6;
+controls.maxDistance = 15;
+controls.update();
+
 $('#toggle-quality').click(function() {
-  console.log('click');
   $('#scene').remove();
   c = document.createElement('canvas'); c.id = 'scene';
   document.body.appendChild( c );
